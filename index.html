@@ -66,7 +66,7 @@ let palettes = {
 
 
 
-let currentPaletteIndex; // Use this to switch between palettes
+let currentPaletteIndex;
 let canvassize;
 let colMode
 let m
@@ -90,7 +90,6 @@ function setup() {
   noiseSeed(blk)
   canvassize = random(["square", "landscape", "potrait"]);
   let paletteNames = Object.keys(palettes);
-    // Use the random function after setting the seed to get a consistent index.
     let consistentIndex = floor(random() * paletteNames.length);
     let currentPaletteName = paletteNames[consistentIndex];
     currentPaletteIndex = palettes[currentPaletteName];
@@ -111,7 +110,7 @@ function setup() {
   }
   
   createCanvas(canvasWidth, canvasHeight);
-  //pixelDensity(2);
+  pixelDensity(2);
   imageMode(CENTER);
   rectMode(CENTER);
   background(242, 237, 220);
@@ -163,7 +162,7 @@ function recty() {
   let squareSize = 20;
   let xOffset = (v.width - (cols * squareSize)) / (cols + 1);
   let yOffset = (v.height - (rows * squareSize)) / (rows + 1);
-  let noiseScale = 0.01; // Adjust this scale for finer or broader noise detail
+  let noiseScale = 0.1;
   let colorIndex
   let colorForRow
   let noiseVal
