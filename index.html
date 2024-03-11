@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nat Grids</title>
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+<style>
+    body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            transform: scale(0.75);
+            transform-origin: center;
+        }
+</style>
+<body>
+    Seed: <input type="number" id="seedInput" value="1234">
+    <button onclick="updateSeed()">Update Seed</button>
+  <script>
+    let OceanBreeze = ["#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00"];
+let SunsetGlow = ["#ff9f1c", "#ffbf69", "#ffffff", "#cbf3f0", "#2ec4b6"];
+let ForestRetreat = ["#2b2d42", "#8d99ae", "#edf2f4", "#ef233c", "#d90429"];
+let VintageCharm = ["#6d6875", "#b5838d", "#e5989b", "#ffb4a2", "#ffcbf2"];
+let SoothingLavender = ["#b56576", "#e56b6f", "#eaac8b", "#c3aed6", "#d4a5a5"];
+let CitrusBurst = ["#ffba08", "#faa307", "#f48c06", "#e85d04", "#dc2f02"];
+let IcyElegance = ["#d8f3dc", "#b7e4c7", "#95d5b2", "#74c69d", "#52b788"];
+let DesertSpice = ["#cc8b86", "#f5d0c5", "#e6b8a2", "#c2948a", "#c46d5e"];
+let RoyalIndigo = ["#4a4e69", "#9a8c98", "#c9ada7", "#f2e9e4", "#c9ada7"];
+let MintyFreshness = ["#b5e48c", "#99d98c", "#76c893", "#52b69a", "#34a0a4"];
+let WarmAndCool = ["#FF6B6B", "#F7B801", "#FDE74C", "#C5E4E7", "#DBE2EF"];
+let EarthyTones = ["#264653", "#2A9D8F", "#E9C46A", "#F4A261", "#E76F51"];
+let MutedElegance = ["#355070", "#6D597A", "#B56576", "#E56B6F", "#EAAC8B"];
+let FreshAndVibrant = ["#1A535C", "#4ECDC4", "#F7FFF7", "#FF6B6B", "#FFE66D"];
+let ModernAndBold = ["#2B2D42", "#8D99AE", "#EDF2F4", "#EF233C", "#D90429"];
+let DynamicContrast = ["#086375", "#F26419", "#F6AE2D", "#F6F7EB", "#33658A"];
+
+let palettes = {
+    OceanBreeze,
+    SunsetGlow,
+    ForestRetreat,
+    VintageCharm,
+    SoothingLavender,
+    CitrusBurst,
+    IcyElegance,
+    DesertSpice,
+    RoyalIndigo,
+    MintyFreshness,
+    WarmAndCool,
+    EarthyTones,
+    MutedElegance,
+    FreshAndVibrant,
+    ModernAndBold,
+    DynamicContrast
+};
+
+
+
+let currentPaletteIndex; // Use this to switch between palettes
+let canvassize;
+let colMode
+let m
+let i
+let j
+let m1
+let t1
+let t
+let blk
+function updateSeed() {
+            let inputVal = document.getElementById('seedInput').value;
+            blk = parseInt(inputVal);
+            setup();
+            draw()
+        }
+
+
+function setup() {
+  let canvasWidth, canvasHeight;
+  randomSeed(blk)
+  noiseSeed(blk)
+  canvassize = random(["square", "landscape", "potrait"]);
+  let paletteNames = Object.keys(palettes);
+    // Use the random function after setting the seed to get a consistent index.
+    let consistentIndex = floor(random() * paletteNames.length);
+    let currentPaletteName = paletteNames[consistentIndex];
+    currentPaletteIndex = palettes[currentPaletteName];
+     
+  switch (canvassize) {
+    case "square":
+      canvasWidth = 830;
+      canvasHeight = 830;
+      break;
+    case "landscape":
+      canvasWidth = 830;
+      canvasHeight = 690;
+      break;
+    case "potrait":
+      canvasWidth = 690;
+      canvasHeight = 830;
+      break;
+  }
+  
+  createCanvas(canvasWidth, canvasHeight);
+  //pixelDensity(2);
+  imageMode(CENTER);
+  rectMode(CENTER);
+  background(242, 237, 220);
+  colMode = random(["rows", "columns", "noise"])
+  
+  v = createGraphics(canvasWidth - 40, canvasHeight - 40);
+  v.imageMode(CENTER);
+  v.background(242, 237, 220);
+  v.noStroke();
+  noStroke();
+    let percent = 40 / 100;
+    graphics = createGraphics(width, height);
+  graphics.stroke(255, 10 / 100 * 255);
+
+  for (i = 0; i < graphics.width * graphics.height * percent; i++) {
+    graphics.point(random(graphics.width),
+    random(graphics.height));
+    }
+  noLoop()
+  print ("canvas = " + canvassize)
+  print("ColorPattern = " + colMode)
+  print("Palette = " + currentPaletteName)
+}
+
+function draw() {
+  recty();
+  image(v, width / 2, height / 2);
+  image(graphics,width/2,height/2);
+}
+
+function recty() {
+  let cols, rows;
+  switch (canvassize) {
+    case "square":
+      cols = 23;
+      rows = 23;
+      break;
+    case "landscape":
+      cols = 23;
+      rows = 19;
+      break;
+    case "potrait":
+      cols = 19;
+      rows = 23;
+      break;
+  }
+
+  v.background(242, 237, 220);
+  let squareSize = 20;
+  let xOffset = (v.width - (cols * squareSize)) / (cols + 1);
+  let yOffset = (v.height - (rows * squareSize)) / (rows + 1);
+  let noiseScale = 0.01; // Adjust this scale for finer or broader noise detail
+  let colorIndex
+  let colorForRow
+  let noiseVal
+  if (colMode == "columns") {
+    m = i
+    t = cols
+    m1 = j
+    t1 = rows
+  } else {
+    m = j
+    t = rows
+    m1 = i
+    t1 = cols
+  }
+  
+    for ( m = 0; m < t; m++) {
+        if (colMode == "columns") {
+        colorIndex = floor(random(currentPaletteIndex.length)); // Use currentPaletteIndex to get a palette, then get its length
+      } else if (colMode == "rows") {
+        colorIndex = floor(random(currentPaletteIndex.length));
+      }
+      
+    colorForRow = currentPaletteIndex[colorIndex];
+    let a
+    let b
+    for (m1 = 0; m1 < t1; m1++) {
+    if (colMode == "columns") {
+    a = m
+    b = m1
+  } else {
+    b = m
+    a = m1
+  }
+      let x = xOffset + a * (squareSize + xOffset);
+      let y = yOffset + b * (squareSize + yOffset);
+      
+      v.fill(0, 250); // Shadow
+      v.rect(x + 5, y + 5, squareSize, squareSize);
+      if (colMode == "noise") {
+        noiseVal = noise(x * noiseScale, y * noiseScale);
+        colorIndex = Math.floor(noiseVal * currentPaletteIndex.length);
+        colorForRow = currentPaletteIndex[colorIndex];
+      }
+
+      v.fill(colorForRow);
+      v.rect(x, y, squareSize, squareSize);
+    }
+  }
+}
+
+</script>
+</body>
+</html>
