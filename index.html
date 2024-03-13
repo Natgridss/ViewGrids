@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nat Grids</title>
+    <title>Nat drawGrid</title>
   
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 </head>
@@ -20,8 +20,6 @@
         canvas {
             display: block;
             margin: 0 auto;
-            transform: scale(0.75);
-            transform-origin: center;
         }
 </style>
 <body>
@@ -66,7 +64,7 @@ let palettes = {
 
 
 
-let currentPaletteIndex;
+let currentPaletteIndex; // Use this to switch between palettes
 let canvassize;
 let colMode
 let m
@@ -90,6 +88,7 @@ function setup() {
   noiseSeed(blk)
   canvassize = random(["square", "landscape", "potrait"]);
   let paletteNames = Object.keys(palettes);
+    // Use the random function after setting the seed to get a consistent index.
     let consistentIndex = floor(random() * paletteNames.length);
     let currentPaletteName = paletteNames[consistentIndex];
     currentPaletteIndex = palettes[currentPaletteName];
@@ -110,7 +109,7 @@ function setup() {
   }
   
   createCanvas(canvasWidth, canvasHeight);
-  pixelDensity(2);
+  //pixelDensity(2);
   imageMode(CENTER);
   rectMode(CENTER);
   background(242, 237, 220);
@@ -121,14 +120,16 @@ function setup() {
   v.background(242, 237, 220);
   v.noStroke();
   noStroke();
-    let percent = 40 / 100;
-    graphics = createGraphics(width, height);
+
+  let percent = 40 / 100;
+	graphics = createGraphics(width, height);
   graphics.stroke(255, 10 / 100 * 255);
 
   for (i = 0; i < graphics.width * graphics.height * percent; i++) {
     graphics.point(random(graphics.width),
     random(graphics.height));
-    }
+	}
+
   noLoop()
   print ("canvas = " + canvassize)
   print("ColorPattern = " + colMode)
@@ -162,7 +163,7 @@ function recty() {
   let squareSize = 20;
   let xOffset = (v.width - (cols * squareSize)) / (cols + 1);
   let yOffset = (v.height - (rows * squareSize)) / (rows + 1);
-  let noiseScale = 0.1;
+  let noiseScale = 0.01; // Adjust this scale for finer or broader noise detail
   let colorIndex
   let colorForRow
   let noiseVal
