@@ -20,13 +20,23 @@
         canvas {
             display: block;
             margin: 0 auto;
+            transform: scale(0.75);
+            transform-origin: center;
         }
 </style>
 <body>
     Seed: <input type="number" id="seedInput" value="1234">
     <button onclick="updateSeed()">Update Seed</button>
   <script>
-    let OceanBreeze = ["#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00"];
+let blk = 69
+function updateSeed() {
+            let inputVal = document.getElementById('seedInput').value;
+            blk = parseInt(inputVal);
+            setup();
+        }
+
+
+let OceanBreeze = ["#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00"];
 let SunsetGlow = ["#ff9f1c", "#ffbf69", "#ffffff", "#cbf3f0", "#2ec4b6"];
 let ForestRetreat = ["#2b2d42", "#8d99ae", "#edf2f4", "#ef233c", "#d90429"];
 let VintageCharm = ["#6d6875", "#b5838d", "#e5989b", "#ffb4a2", "#ffcbf2"];
@@ -64,7 +74,7 @@ let palettes = {
 
 
 
-let currentPaletteIndex; // Use this to switch between palettes
+let currentPaletteIndex;
 let canvassize;
 let colMode
 let m
@@ -73,26 +83,38 @@ let j
 let m1
 let t1
 let t
-let blk
-function updateSeed() {
-            let inputVal = document.getElementById('seedInput').value;
-            blk = parseInt(inputVal);
-            setup();
-            draw()
-        }
 
+
+let baseSquareSize
+
+
+
+let canvas;
+let canvasWidth, canvasHeight;
+let seed
 
 function setup() {
-  let canvasWidth, canvasHeight;
-  randomSeed(blk)
-  noiseSeed(blk)
-  canvassize = random(["square", "landscape", "potrait"]);
+  pixelDensity(2);
+  imageMode(CENTER);
+  rectMode(CENTER);
+  noLoop();
+  drawGrid(); 
+}
+
+function draw() {
+  
+}
+
+function drawGrid() {
+  seed = blk;
+  randomSeed(seed);
+  noiseSeed(seed);
+  canvassize = random(["square", "landscape", "portrait"]);
   let paletteNames = Object.keys(palettes);
-    // Use the random function after setting the seed to get a consistent index.
-    let consistentIndex = floor(random() * paletteNames.length);
-    let currentPaletteName = paletteNames[consistentIndex];
-    currentPaletteIndex = palettes[currentPaletteName];
-     
+  let consistentIndex = floor(random() * paletteNames.length);
+  let currentPaletteName = paletteNames[consistentIndex];
+  currentPaletteIndex = palettes[currentPaletteName];
+  
   switch (canvassize) {
     case "square":
       canvasWidth = 830;
@@ -102,18 +124,20 @@ function setup() {
       canvasWidth = 830;
       canvasHeight = 690;
       break;
-    case "potrait":
+    case "portrait":
       canvasWidth = 690;
       canvasHeight = 830;
       break;
   }
+
   
-  createCanvas(canvasWidth, canvasHeight);
-  //pixelDensity(2);
-  imageMode(CENTER);
-  rectMode(CENTER);
+  if (canvas) {
+    canvas.remove(); 
+  }
+  canvas = createCanvas(canvasWidth, canvasHeight);
   background(242, 237, 220);
-  colMode = random(["rows", "columns", "noise"])
+
+  colMode = random(["columns", "rows", "flower", "centralWave", "diagonal", "diagonalRL", "noise"]);
   
   v = createGraphics(canvasWidth - 40, canvasHeight - 40);
   v.imageMode(CENTER);
@@ -122,27 +146,40 @@ function setup() {
   noStroke();
 
   let percent = 40 / 100;
-	graphics = createGraphics(width, height);
+  graphics = createGraphics(width, height);
   graphics.stroke(255, 10 / 100 * 255);
 
   for (i = 0; i < graphics.width * graphics.height * percent; i++) {
-    graphics.point(random(graphics.width),
-    random(graphics.height));
-	}
+    graphics.point(random(graphics.width), random(graphics.height));
+  }
 
-  noLoop()
-  print ("canvas = " + canvassize)
-  print("ColorPattern = " + colMode)
-  print("Palette = " + currentPaletteName)
-}
+  
+  print("canvas = " + canvassize);
+  print("ColorPattern = " + colMode);
+  print("Palette = " + currentPaletteName);
+  let patternChoice = random(["ripple", "diamond", "noise", "normal"]);
 
-function draw() {
-  recty();
+  if (patternChoice === "ripple" && colMode === "centralWave") {
+    let colModesExcludingCentralWave = ["flower", "diagonal", "diagonalRL", "columns", "rows", "noise"];
+    colMode = random(colModesExcludingCentralWave);
+  }
+
+  if (patternChoice === "noise" && colMode === "centralWave") {
+    let colModesExcludingCentralWave = ["flower", "diagonal", "diagonalRL", "columns", "rows", "noise"];
+    colMode = random(colModesExcludingCentralWave);
+  }
+
+
+
+
+  recty(patternChoice);
   image(v, width / 2, height / 2);
-  image(graphics,width/2,height/2);
+  image(graphics, width / 2, height / 2);
+  print(patternChoice)
 }
 
-function recty() {
+
+function recty(patternChoice) {
   let cols, rows;
   switch (canvassize) {
     case "square":
@@ -153,62 +190,161 @@ function recty() {
       cols = 23;
       rows = 19;
       break;
-    case "potrait":
+    case "portrait":
       cols = 19;
       rows = 23;
       break;
   }
 
   v.background(242, 237, 220);
-  let squareSize = 20;
-  let xOffset = (v.width - (cols * squareSize)) / (cols + 1);
-  let yOffset = (v.height - (rows * squareSize)) / (rows + 1);
-  let noiseScale = 0.01; // Adjust this scale for finer or broader noise detail
-  let colorIndex
-  let colorForRow
-  let noiseVal
-  if (colMode == "columns") {
-    m = i
-    t = cols
-    m1 = j
-    t1 = rows
-  } else {
-    m = j
-    t = rows
-    m1 = i
-    t1 = cols
+
+  let baseSquareSize = 20;
+  let xOffset = (v.width - (cols * baseSquareSize)) / (cols + 1);
+  let yOffset = (v.height - (rows * baseSquareSize)) / (rows + 1);
+  let noiseScale = 0.1; 
+
+  let rippleScale = random([1,3,5]);
+  let rippleSpeed = PI / random([2,3]);
+  let colorsForRows = [];
+  let colorsForColumns = [];
+  let wavecolor, flowercolor, noisecolor, diagonalColor, diagonalRLColor;
+  if (colMode === "rows") {
+    
+    for (let j = 0; j < rows; j++) {
+      let colorIndex = floor(random(currentPaletteIndex.length));
+      colorsForRows[j] = currentPaletteIndex[colorIndex];
+    }
+  } else if (colMode === "columns") {
+   
+    for (let i = 0; i < cols; i++) {
+      let colorIndex = floor(random(currentPaletteIndex.length));
+      colorsForColumns[i] = currentPaletteIndex[colorIndex];
+    }
   }
-  
-    for ( m = 0; m < t; m++) {
-        if (colMode == "columns") {
-        colorIndex = floor(random(currentPaletteIndex.length)); // Use currentPaletteIndex to get a palette, then get its length
-      } else if (colMode == "rows") {
-        colorIndex = floor(random(currentPaletteIndex.length));
-      }
+
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let x = xOffset + i * (baseSquareSize + xOffset);
+      let y = yOffset + j * (baseSquareSize + yOffset);
       
-    colorForRow = currentPaletteIndex[colorIndex];
-    let a
-    let b
-    for (m1 = 0; m1 < t1; m1++) {
-    if (colMode == "columns") {
-    a = m
-    b = m1
-  } else {
-    b = m
-    a = m1
-  }
-      let x = xOffset + a * (squareSize + xOffset);
-      let y = yOffset + b * (squareSize + yOffset);
-      
-      v.fill(0, 250); // Shadow
-      v.rect(x + 5, y + 5, squareSize, squareSize);
-      if (colMode == "noise") {
-        noiseVal = noise(x * noiseScale, y * noiseScale);
-        colorIndex = Math.floor(noiseVal * currentPaletteIndex.length);
-        colorForRow = currentPaletteIndex[colorIndex];
+      let squareSize = baseSquareSize;
+    let diamondSize = Math.min(cols, rows) / 1.7;
+    let distance = (Math.abs(i - cols / 2) + Math.abs(j - rows / 2)) / diamondSize;
+
+     
+      if (patternChoice === "noise") {
+        
+        let noiseValue = noise(i * noiseScale, j * noiseScale);
+        squareSize *= map(noiseValue, 0, 1, 0.3, 1.5);
+      } else if (patternChoice === "ripple") {
+        
+        let distanceFromCenter = dist(i, j, cols / 2, rows / 2);
+        squareSize *= (1 + 0.5 * sin(distanceFromCenter * rippleScale +  seed * rippleSpeed));
+      } else if (patternChoice === "diamond") {
+        let distance = (Math.abs(i - cols / 2) + Math.abs(j - rows / 2)) / diamondSize;
+        if (distance <= 1) {
+          squareSize *= (1 - distance); 
+        }
       }
 
-      v.fill(colorForRow);
+
+      
+      
+
+      
+      if (colMode === "centralWave") {
+  let centerX = cols / 2;
+  let centerY = rows / 2;
+  let maxDistance = dist(0, 0, centerX, centerY);
+
+  
+  let colorIndex1 = Math.floor(random(currentPaletteIndex.length));
+  let colorIndex2 = colorIndex1;
+  while (colorIndex2 === colorIndex1) {
+    colorIndex2 = Math.floor(random(currentPaletteIndex.length));
+  }
+
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let x = xOffset + i * (baseSquareSize + xOffset);
+      let y = yOffset + j * (baseSquareSize + yOffset);
+
+      
+      let distance = dist(i, j, centerX, centerY);
+      
+      
+      let frequency = 2 * Math.PI / maxDistance; 
+      let waveValue = (Math.sin(distance * frequency) + 1) / 2; 
+     
+      let color1 = color(currentPaletteIndex[colorIndex1]);
+      let color2 = color(currentPaletteIndex[colorIndex2]);
+      wavecolor = lerpColor(color1, color2, waveValue);
+
+      v.fill(wavecolor);
+      v.rect(x, y, baseSquareSize, baseSquareSize);
+    }
+  }
+} else if (colMode === "flower") {
+    let angle = atan2(j - rows / 2, i - cols / 2) + PI;
+    let distance = dist(i, j, cols / 2, rows / 2);
+    let colorIndex = (angle / (2 * PI)) * currentPaletteIndex.length;
+    let gradientIndex = (distance / max(cols / 2, rows / 2)) * currentPaletteIndex.length;
+
+    
+    colorIndex = floor(colorIndex) % currentPaletteIndex.length;
+    gradientIndex = floor(gradientIndex) % currentPaletteIndex.length;
+
+    
+    if (currentPaletteIndex[colorIndex] && currentPaletteIndex[gradientIndex]) {
+        flowercolor = lerpColor(color(currentPaletteIndex[colorIndex]), color(currentPaletteIndex[gradientIndex]), 0.5);
+    } else {
+        
+        flowercolor = color('#000000');
+    }
+      } else if (colMode === "diagonal") {
+        let diagonalIndex = (i + j) % currentPaletteIndex.length;
+        diagonalColor = currentPaletteIndex[diagonalIndex];
+      } else if (colMode === "diagonalRL") { 
+        let diagonalIndex = (cols - i + j - 1) % currentPaletteIndex.length;
+        diagobalRLcolor = currentPaletteIndex[diagonalIndex];
+      } else if (colMode === "noise") {
+        noiseVal = noise(x * 0.01, y * 0.01);
+        colorIndex = Math.floor(noiseVal * currentPaletteIndex.length);
+        noisecolor = currentPaletteIndex[colorIndex];
+      }
+
+      let fillColor;
+      switch (colMode) {
+        case "rows":
+          fillColor = colorsForRows[j]
+          break;
+        case "columns":
+        fillColor = colorsForColumns[i]
+          break;
+          case "centralWave":
+          fillColor = wavecolor
+          break;
+          case "flower":
+          fillColor = flowercolor
+          break;
+          case "diagonal":
+          fillColor = diagonalColor
+          break;
+          case "diagonalRL":
+          fillColor = diagobalRLcolor
+          break;
+          case "noise":
+          fillColor = noisecolor
+          break;
+        
+      }
+
+      
+
+      
+      v.fill(50); 
+      v.rect(x + 5, y + 5, squareSize, squareSize);
+      v.fill(fillColor);
       v.rect(x, y, squareSize, squareSize);
     }
   }
