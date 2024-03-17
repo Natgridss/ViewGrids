@@ -1,42 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nat Grids</title>
-  
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-</head>
-<style>
-    body {
+    <style>
+        body, html {
+            height: 100%;
             margin: 0;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
+        }
+        #main-container {
+            display: flex;
+            width: 95%; /* Take up almost full width to prevent overflow */
+            max-height: 90%; /* Take up almost full height to prevent overflow */
+            align-items: center; /* Center children vertically */
+            justify-content: center; /* Center children horizontally */
+        }
+        #artwork {
+            flex: 2; /* Allocate more space to artwork */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* In case the canvas is larger than the container */
         }
         canvas {
-            display: block;
-            margin: 0 auto;
-            transform: scale(0.75);
-            transform-origin: center;
+    transform: scale(0.65);
+    transform-origin: center;
+    border: 5px solid #fff; /* Add border directly to the canvas */
+    box-sizing: border-box; /* Include border in the canvas size */
+}
+
+        #control-panel {
+            flex: 1; /* Allocate less space to controls */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
         }
-</style>
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid #fff;
+            width: 100%;
+        }
+        #attributes {
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #fff; /* Just border to keep the structure */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: transparent; /* Transparent background for the table */
+        }
+        th, td {
+            text-align: left;
+            padding: 8px 0;
+            border-bottom: 1px solid #fff;
+        }
+    </style>
+</head>
 <body>
-    Seed: <input type="number" id="seedInput" value="1234">
-    <button onclick="updateSeed()">Update Seed</button>
-  <script>
-let blk = 69
-function updateSeed() {
-            let inputVal = document.getElementById('seedInput').value;
-            blk = parseInt(inputVal);
-            setup();
-        }
+    <div id="main-container">
+        <div id="artwork">
+            <!-- P5 canvas will be attached here and scaled -->
+        </div>
+        <div id="control-panel">
+            <input type="number" id="seedInput" value="1234">
+            <button onclick="updateSeed()">Generate</button>
+            <button onclick="generateRandomSeed()">Random Seed</button>
+            <div id="attributes">
+                <table>
+                    <tr>
+                        <th>Color Pattern:</th>
+                        <td id="colorPattern">-</td>
+                    </tr>
+                    <tr>
+                        <th>Column Mode:</th>
+                        <td id="columnMode">-</td>
+                    </tr>
+                    <tr>
+                        <th>Palette:</th>
+                        <td id="paletteName">-</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script>
 
-        let OceanBreeze = ["#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00"];
+let canvassize;
+let m
+let i
+let j
+let m1
+let t1
+let t
+let baseSquareSize
+let canvas;
+let canvasWidth, canvasHeight;
+let seed
+let blk = 69;
+let currentPaletteIndex, colMode
+let patternChoice;
+
+let OceanBreeze = ["#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00"];
 let SunsetGlow = ["#ff9f1c", "#ffbf69", "#ffffff", "#cbf3f0", "#2ec4b6"];
 let VintageCharm = ["#6d6875", "#b5838d", "#e5989b", "#ffb4a2", "#ffcbf2"];
 let SoothingLavender = ["#b56576", "#e56b6f", "#eaac8b", "#c3aed6", "#d4a5a5"];
@@ -81,42 +160,32 @@ let palettes = {
     FreshAndVibrant
 };
 
+let currentPaletteName
 
+        function updateSeed() {
+            let inputVal = document.getElementById('seedInput').value;
+            blk = parseInt(inputVal);
+            setup();
+        }
 
-
-
-let currentPaletteIndex;
-let canvassize;
-let colMode
-let m
-let i
-let j
-let m1
-let t1
-let t
-
-
-let baseSquareSize
-
-
-
-let canvas;
-let canvasWidth, canvasHeight;
-let seed
-
-function setup() {
-  pixelDensity(2);
-  imageMode(CENTER);
-  rectMode(CENTER);
-  noLoop();
-  drawGrid(); 
+        function generateRandomSeed() {
+    blk = Math.floor(Math.random() * 10000);
+    document.getElementById('seedInput').value = blk;
+    setup(); // Redraw the artwork with the new seed
 }
 
-function draw() {
-  
-}
 
-function drawGrid() {
+        function setup() {
+            pixelDensity(2);
+            imageMode(CENTER);
+            rectMode(CENTER);
+            noLoop();
+            drawGrid(); 
+            canvas.parent('artwork');
+            updateAttributes(patternChoice, colMode, currentPaletteName);
+        }
+
+        function drawGrid() {
   seed = blk;
   randomSeed(seed);
   noiseSeed(seed);
@@ -124,7 +193,7 @@ function drawGrid() {
   let bg = random(["#D9CCC1","#f2eddc","#D9D9D9"])
   let paletteNames = Object.keys(palettes);
   let consistentIndex = floor(random() * paletteNames.length);
-  let currentPaletteName = paletteNames[consistentIndex];
+  currentPaletteName = paletteNames[consistentIndex];
   currentPaletteIndex = palettes[currentPaletteName];
   
   switch (canvassize) {
@@ -149,7 +218,7 @@ function drawGrid() {
   canvas = createCanvas(canvasWidth, canvasHeight);
   background(bg);
 
-  colMode = random(["columns", "rows", "flower", "centralWave", "diagonal", "diagonalRL", "noise"]);
+  colMode = random(["Columns", "Rows", "Flower", "CentralWave", "Diagonal", "DiagonalRL", "Noise"]);
   
   v = createGraphics(canvasWidth - 40, canvasHeight - 40);
   v.imageMode(CENTER);
@@ -169,15 +238,15 @@ function drawGrid() {
   print("canvas = " + canvassize);
   print("ColorPattern = " + colMode);
   print("Palette = " + currentPaletteName);
-  let patternChoice = random(["ripple", "diamond", "noise", "normal"]);
+  patternChoice = random(["Ripple", "Diamond", "Noise", "Normal"]);
 
-  if (patternChoice === "ripple" && colMode === "centralWave") {
-    let colModesExcludingCentralWave = ["flower", "diagonal", "diagonalRL", "columns", "rows", "noise"];
+  if (patternChoice === "Ripple" && colMode === "CentralWave") {
+    let colModesExcludingCentralWave = ["Flower", "Diagonal", "DiagonalRL", "Columns", "Rows", "Noise"];
     colMode = random(colModesExcludingCentralWave);
   }
 
-  if (patternChoice === "noise" && colMode === "centralWave") {
-    let colModesExcludingCentralWave = ["flower", "diagonal", "diagonalRL", "columns", "rows", "noise"];
+  if (patternChoice === "Noise" && colMode === "CentralWave") {
+    let colModesExcludingCentralWave = ["Flower", "Diagonal", "DiagonalRL", "Columns", "Rows", "Noise"];
     colMode = random(colModesExcludingCentralWave);
   }
 
@@ -188,10 +257,10 @@ function drawGrid() {
   image(v, width / 2, height / 2);
   image(graphics, width / 2, height / 2);
   print(patternChoice)
-}
+            updateAttributes(patternChoice, colMode, currentPaletteName);
+        }
 
-
-function recty(patternChoice) {
+        function recty(patternChoice) {
   let cols, rows;
   switch (canvassize) {
     case "square":
@@ -208,6 +277,8 @@ function recty(patternChoice) {
       break;
   }
 
+
+
   let baseSquareSize = 20;
   let xOffset = (v.width - (cols * baseSquareSize)) / (cols + 1);
   let yOffset = (v.height - (rows * baseSquareSize)) / (rows + 1);
@@ -219,13 +290,13 @@ function recty(patternChoice) {
   let colorsForRows = [];
   let colorsForColumns = [];
   let wavecolor, flowercolor, noisecolor, diagonalColor, diagonalRLColor;
-  if (colMode === "rows") {
+  if (colMode === "Rows") {
     
     for (let j = 0; j < rows; j++) {
       let colorIndex = floor(random(currentPaletteIndex.length));
       colorsForRows[j] = currentPaletteIndex[colorIndex];
     }
-  } else if (colMode === "columns") {
+  } else if (colMode === "Columns") {
    
     for (let i = 0; i < cols; i++) {
       let colorIndex = floor(random(currentPaletteIndex.length));
@@ -243,15 +314,15 @@ function recty(patternChoice) {
     let distance = (Math.abs(i - cols / 2) + Math.abs(j - rows / 2)) / diamondSize;
 
      
-      if (patternChoice === "noise") {
+      if (patternChoice === "Noise") {
         
         let noiseValue = noise(i * noiseScale, j * noiseScale);
         squareSize *= map(noiseValue, 0, 1, 0.3, 1.5);
-      } else if (patternChoice === "ripple") {
+      } else if (patternChoice === "Ripple") {
         
         let distanceFromCenter = dist(i, j, cols / 2, rows / 2);
         squareSize *= (1 + 0.5 * sin(distanceFromCenter * rippleScale +  seed * rippleSpeed));
-      } else if (patternChoice === "diamond") {
+      } else if (patternChoice === "Diamond") {
         let distance = (Math.abs(i - cols / 2) + Math.abs(j - rows / 2)) / diamondSize;
         if (distance <= 1) {
           squareSize *= (1 - distance); 
@@ -263,7 +334,7 @@ function recty(patternChoice) {
       
 
       
-      if (colMode === "centralWave") {
+      if (colMode === "CentralWave") {
   let centerX = cols / 2;
   let centerY = rows / 2;
   let maxDistance = dist(0, 0, centerX, centerY);
@@ -295,7 +366,7 @@ function recty(patternChoice) {
       v.rect(x, y, baseSquareSize, baseSquareSize);
     }
   }
-} else if (colMode === "flower") {
+} else if (colMode === "Flower") {
     let angle = atan2(j - rows / 2, i - cols / 2) + PI;
     let distance = dist(i, j, cols / 2, rows / 2);
     let colorIndex = (angle / (2 * PI)) * currentPaletteIndex.length;
@@ -312,13 +383,13 @@ function recty(patternChoice) {
         
         flowercolor = color('#000000');
     }
-      } else if (colMode === "diagonal") {
+      } else if (colMode === "Diagonal") {
         let diagonalIndex = (i + j) % currentPaletteIndex.length;
         diagonalColor = currentPaletteIndex[diagonalIndex];
-      } else if (colMode === "diagonalRL") { 
+      } else if (colMode === "DiagonalRL") { 
         let diagonalIndex = (cols - i + j - 1) % currentPaletteIndex.length;
         diagobalRLcolor = currentPaletteIndex[diagonalIndex];
-      } else if (colMode === "noise") {
+      } else if (colMode === "Noise") {
         noiseVal = noise(x * 0.01, y * 0.01);
         colorIndex = Math.floor(noiseVal * currentPaletteIndex.length);
         noisecolor = currentPaletteIndex[colorIndex];
@@ -326,25 +397,25 @@ function recty(patternChoice) {
 
       let fillColor;
       switch (colMode) {
-        case "rows":
+        case "Rows":
           fillColor = colorsForRows[j]
           break;
-        case "columns":
+        case "Columns":
         fillColor = colorsForColumns[i]
           break;
-          case "centralWave":
+          case "CentralWave":
           fillColor = wavecolor
           break;
-          case "flower":
+          case "Flower":
           fillColor = flowercolor
           break;
-          case "diagonal":
+          case "Diagonal":
           fillColor = diagonalColor
           break;
-          case "diagonalRL":
+          case "DiagonalRL":
           fillColor = diagobalRLcolor
           break;
-          case "noise":
+          case "Noise":
           fillColor = noisecolor
           break;
         
@@ -360,6 +431,16 @@ function recty(patternChoice) {
     }
   }
 }
+function updateAttributes(patternChoice, colMode, paletteName) {
+    document.getElementById('colorPattern').textContent = patternChoice;
+    document.getElementById('columnMode').textContent = colMode;
+    document.getElementById('paletteName').textContent = paletteName;
+}
+
+
+    </script>
+</body>
+</html>
 
 </script>
 </body>
