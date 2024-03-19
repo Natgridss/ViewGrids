@@ -81,12 +81,12 @@
             <div id="attributes">
                 <table>
                     <tr>
-                        <th>Color Pattern:</th>
-                        <td id="colorPattern">-</td>
+                        <th>Grid Pattern:</th>
+                        <td id="GridPattern">-</td>
                     </tr>
                     <tr>
-                        <th>Column Mode:</th>
-                        <td id="columnMode">-</td>
+                        <th>Color Mode:</th>
+                        <td id="ColorMode">-</td>
                     </tr>
                     <tr>
                         <th>Palette:</th>
@@ -433,7 +433,7 @@ let currentPaletteName
 }
 function updateAttributes(patternChoice, colMode, paletteName) {
     document.getElementById('GridPattern').textContent = patternChoice;
-    document.getElementById('colorMode').textContent = colMode;
+    document.getElementById('ColorMode').textContent = colMode;
     document.getElementById('paletteName').textContent = paletteName;
 }
 
